@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import LineDetection as ld
 import DataRead as dr
-
+import Kalman
 from PyQt5 import QtCore, QtGui, QtWidgets
 from matplotlib.figure import Figure
 from matplotlib.animation import TimedAnimation
@@ -32,7 +32,7 @@ class CustomMainWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         print("START CUSTOMWINDOW")
 
         # Define the geometry of the main window
-        self.setGeometry(300, 50, 1500, 1000)
+        self.setGeometry(300, 50, 1000, 1000)
         self.setWindowTitle("AEBs")
         self.LAYOUT_A = QtWidgets.QGridLayout()  # setting layout
         self.LAYOUT_B = QtWidgets.QHBoxLayout()
@@ -55,15 +55,15 @@ class CustomMainWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         #Place the Options 
         self.btn_exit = QtWidgets.QPushButton('EXIT', self)
-        self.btn_exit.move(1300,20)
+        self.btn_exit.move(800,20)
         self.btn_exit.setCheckable(True)
         self.btn_exit.clicked.connect(self.exit_event)
 
         self.lbl_TTC = QtWidgets.QLabel('Setting Criteria TTC',self)
-        self.lbl_TTC.move(1300,100)
+        self.lbl_TTC.move(800,100)
 
         self.cTTC_spinbox = QtWidgets.QDoubleSpinBox(self)
-        self.cTTC_spinbox.move(1300,200)
+        self.cTTC_spinbox.move(800,200)
         self.cTTC_spinbox.setMinimum(0.0)
         self.cTTC_spinbox.setMaximum(9.9)
         self.cTTC_spinbox.setSingleStep(0.1)
@@ -179,7 +179,7 @@ class CustomFigCanvas(FigureCanvas, TimedAnimation):
         self.ax1.add_line(self.line1_head)
         self.ax1.add_line(self.Criteria_TTC_line)
         self.ax1.set_xlim(0, self.xlim - 1)
-        self.ax1.set_ylim(0, 10)
+        self.ax1.set_ylim(0, 300)
         self.ax1.grid(True)
         self.ax1.legend()
 
@@ -235,9 +235,10 @@ def dataSendLoop(addData_callbackFunc):
     mySrc = Communicate()
     mySrc.data_signal.connect(addData_callbackFunc)
     while(True):
-        mySrc.data_signal.emit(dr.get_arduino_data())  # <- Here you emit a signal!
-       
-
+        pos, vel = dr.get_arduino_data()
+        pos, vel = Kalman.Kalman(pos, vel)
+        TTC = pos/vel
+        mySrc.data_signal.emit(TTC)  # <- Here you emit a signal!
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

@@ -7,7 +7,7 @@ import numpy as np
 
 def hsv_filter(img):
     hsv= cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    lower_thre = np.array([20, 100, 100], dtype="uint8")
+    lower_thre = np.array([20, 10, 100], dtype="uint8")
     upper_thre = np.array([30, 255, 255], dtype="uint8")
     mask1 = cv2.inRange(hsv, lower_thre, upper_thre)
     #mask1 = cv2.inRange(hsv,np.array([0,70,50]),np.array([10,255,255]))
@@ -25,18 +25,17 @@ def gaussian_blur(img):
 def ROI(img):
     img_h = img.shape[0]
     img_w = img.shape[1]
-    region = np.array([[(0.10*img_w,0.9*img_h),(0.9*img_w,0.9*img_h),(0.65*img_w, 0.48*img_h),(0.4*img_w, 0.48*img_h)]], dtype = np.int32)
+    region = np.array([[(-0.4*img_w,0.9*img_h),(1.4*img_w,0.9*img_h),(0.65*img_w, 0.5*img_h),(0.4*img_w, 0.5*img_h)]], dtype = np.int32)
     mask = np.zeros_like(img)
     cv2.fillPoly(mask,region,(255,255,255))
     masked_img = cv2.bitwise_and(img,mask)
     return masked_img
 
-
 def ROI2(img):
     img_h = img.shape[0]
     img_w = img.shape[1]
 
-    region = np.array([[(0.2*img_w,0.85*img_h),(0.82*img_w,0.85*img_h),(0.5*img_w, 0.52*img_h)]], dtype = np.int32)
+    region = np.array([[(-0.3*img_w,0.85*img_h),(0.82*img_w,0.85*img_h),(0.5*img_w, 0.52*img_h)]], dtype = np.int32)
 
     mask = np.zeros_like(img)
     cv2.fillPoly(mask,region,(255,255,255))
@@ -48,7 +47,7 @@ def bev(img):
     IMAGE_H = img.shape[0]
     IMAGE_W = img.shape[1]
     src = np.float32([[0, IMAGE_H], [IMAGE_W, IMAGE_H], [0.6*IMAGE_W, 0.5*IMAGE_H], [0.4*IMAGE_W, 0.5*IMAGE_H]]) #좌하우하우상좌상
-    dst = np.float32([[0.35*IMAGE_W, IMAGE_H], [0.65*IMAGE_W, IMAGE_H], [0.6*IMAGE_W, 0.5*IMAGE_H], [0.4*IMAGE_W, 0.5*IMAGE_H]])
+    dst = np.float32([[0.46*IMAGE_W, IMAGE_H], [0.54*IMAGE_W, IMAGE_H], [0.6*IMAGE_W, 0.5*IMAGE_H], [0.4*IMAGE_W, 0.5*IMAGE_H]])
     M = cv2.getPerspectiveTransform(src, dst) # The transformation matrix
     warped_img = cv2.warpPerspective(img, M, (IMAGE_W, IMAGE_H))
     return warped_img
@@ -57,8 +56,8 @@ def bev(img):
 def bev_inv(img):
     IMAGE_H = img.shape[0]
     IMAGE_W = img.shape[1]
-    src = np.float32([[0, IMAGE_H], [IMAGE_W, IMAGE_H], [0.6*IMAGE_W, 0.5*IMAGE_H], [0.4*IMAGE_W, 0.5*IMAGE_H]])#좌하우하우상좌상
-    dst = np.float32([[0.35*IMAGE_W, IMAGE_H], [0.65*IMAGE_W, IMAGE_H], [0.6*IMAGE_W, 0.5*IMAGE_H], [0.4*IMAGE_W, 0.5*IMAGE_H]])
+    src = np.float32([[0, IMAGE_H], [IMAGE_W, IMAGE_H], [0.6 * IMAGE_W, 0.5 * IMAGE_H], [0.4 * IMAGE_W, 0.5 * IMAGE_H]])  # 좌하우하우상좌상
+    dst = np.float32([[0.46 * IMAGE_W, IMAGE_H], [0.54 * IMAGE_W, IMAGE_H], [0.6 * IMAGE_W, 0.5 * IMAGE_H],[0.4 * IMAGE_W, 0.5 * IMAGE_H]])
     Minv = cv2.getPerspectiveTransform(dst, src) # Inverse transformation
     inversed_img = cv2.warpPerspective(img, Minv, (IMAGE_W, IMAGE_H))
     return inversed_img
@@ -86,15 +85,18 @@ def linedetection(img):
     
 
 def run():
-    cap = cv2.VideoCapture('123.mp4')
-
+    cap = cv2.VideoCapture('outpy.avi')
+    #out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (640, 480))
     while (True):
-        ret, src = cap.read()
-        
-        #src = cv2.resize(src, (640, 640))
+        ret, src1 = cap.read()
+        #out.write(src1)
+        #src = cv2.resize(src1, (640, 640))
+        src = ROI(src1)
+        src = bev(src)
+
         dst = cv2.Canny(src, 50, 150, None, 3)
         cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-        cdst = ROI(cdst)
+
         cdstP = np.copy(cdst)
     
         lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
@@ -111,17 +113,22 @@ def run():
                 pt2 = (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a)))
                 cv2.line(cdst, pt1, pt2, (0, 0, 255), 3, cv2.LINE_AA)
     
-        linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
+        linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 20)
     
         if linesP is not None:
             for i in range(0, len(linesP)):
                 l = linesP[i][0]
                 cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0, 0, 255), 3, cv2.LINE_AA)
-    
+
+        final = bev_inv(cdstP)
+        #final = ROI2(cdstP)
+        #final = hsv_filter(cdstP)
+        final = cv2.addWeighted(src1, 1, final, 1, 0.0)
+
         cv2.imshow("Source", src)
-        cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
-        cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
-    
+        #cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
+        #cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
+        cv2.imshow("final", final)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     

@@ -9,11 +9,11 @@ import time
 import serial
 
 #Arduino connection
-ard = serial.Serial('COM22',115200)
+ard = serial.Serial('COM10', 115200)
 
 
 #Lidar connection
-LIDAR_PORT_NAME = 'COM17'  
+LIDAR_PORT_NAME = 'COM11'
 lidar = RPLidar(LIDAR_PORT_NAME)
 iterator = lidar.iter_scans(max_buf_meas=1000, min_len=0)
 
@@ -54,12 +54,12 @@ def init():
 
 #Get data from arduino
 def get_arduino_data():
-    ard.flushInput()
-    while ard.readline() == None:
-        continue
 
-    vel_read = ard.readline().decode()
-    vel = float(vel_read)
+    ard.flushInput()
+    while(ard.readline() == None):
+        continue
+    vel_read = ard.readline()
+    vel = vel_read.decode()
 
     return vel
 
@@ -105,8 +105,17 @@ def animate(i,data):
                       
     
 if __name__ == '__main__': 
-    ani = animation.FuncAnimation(fig, run, init_func = init, frames = x_num ,interval = 50)
+    '''ani = animation.FuncAnimation(fig, run, init_func = init, frames = x_num ,interval = 50)
     ax.plot([0,100],[2.6,2.6],label = 'Criteria TTC') # 기준 TTC를 직선으로 그림
     ax.legend()
-    plt.show()
+    plt.show()'''
+    dis_sum =0
+    count = 0
+    prev_dis = 0
+    n = 1
+    while(True):
+        start = time.time()
+        print(get_arduino_data())
+        print(time.time()-start)
+
    
