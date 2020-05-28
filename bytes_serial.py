@@ -58,6 +58,8 @@ if __name__ == "__main__":
     while(True):
         start = time.time()
         dis, vel = get_pos_vel(dis)
+        print(dis)
+        print(vel)
         vel = -vel
         if (vel == 0):
             pass
@@ -66,7 +68,7 @@ if __name__ == "__main__":
         else:
             TTC = dis/vel
 
-        print(TTC)
+        #print(TTC)
         if TTC < 0.26:
             print("================================")
 
