@@ -6,8 +6,9 @@ import matplotlib
 import cv2
 import numpy as np
 import LineDetection as ld
-import DataRead as dr
+import bytes_serial as bs
 import Kalman
+import Algorithm
 from PyQt5 import QtCore, QtGui, QtWidgets
 from matplotlib.figure import Figure
 from matplotlib.animation import TimedAnimation
@@ -121,9 +122,10 @@ class ImageViewer(QtWidgets.QWidget):
 #Capture video from camera
 class ShowVideo(QtCore.QObject):
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(2)
 
     ret, image = camera.read()
+    print(ret)
     height, width = image.shape[:2]
 
     VideoSignal1 = QtCore.pyqtSignal(QtGui.QImage)
@@ -179,12 +181,12 @@ class CustomFigCanvas(FigureCanvas, TimedAnimation):
         self.ax1.add_line(self.line1_head)
         self.ax1.add_line(self.Criteria_TTC_line)
         self.ax1.set_xlim(0, self.xlim - 1)
-        self.ax1.set_ylim(0, 300)
+        self.ax1.set_ylim(0, 15)
         self.ax1.grid(True)
         self.ax1.legend()
 
         FigureCanvas.__init__(self, self.fig)
-        TimedAnimation.__init__(self, self.fig, interval=50, blit=True)
+        TimedAnimation.__init__(self, self.fig, interval= 1, blit=True)
 
     def new_frame_seq(self):
         return iter(range(self.n.size))
@@ -234,11 +236,36 @@ def dataSendLoop(addData_callbackFunc):
     # Setup the signal-slot mechanism.
     mySrc = Communicate()
     mySrc.data_signal.connect(addData_callbackFunc)
+    pos = 0
+    vel = 0
+    TTC = 10
     while(True):
-        pos, vel = dr.get_arduino_data()
-        pos, vel = Kalman.Kalman(pos, vel)
-        TTC = pos/vel
+        try:
+            pos, vel = bs.get_pos_vel(pos)
+            filtered = Kalman.Kalman(pos, vel)
+
+            #pos, vel = filtered[0][0], filtered[1][0]
+            vel = - vel
+
+        except:
+            continue
+
+        if (vel == 0):
+            pass
+        else:
+            if vel < 0:
+                pass
+            else:
+                TTC = pos / vel
+
+        #Algorithm.algo(TTC, myGUI.myFig.Criteria_TTC)
+        '''if TTC < myGUI.myFig.Criteria_TTC:
+            pass
+            #bs.ard.write(b'Q')
+            #print(TTC)'''
+
         mySrc.data_signal.emit(TTC)  # <- Here you emit a signal!
+        print(TTC)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

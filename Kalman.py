@@ -48,6 +48,8 @@ def kalman_filter(z_meas, x_esti, P):
     return x_esti, P
 
 def Kalman(pos, vel):
+    global x_esti, z_meas, P
+
     x_esti, P = x_0, P_0
 
     z_pos = pos
@@ -57,4 +59,4 @@ def Kalman(pos, vel):
 
     x_esti, P = kalman_filter(z_meas, x_esti, P)
 
-    return x_esti[0], x_esti[1]
+    return x_esti[0],x_esti[1]
