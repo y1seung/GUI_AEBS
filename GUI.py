@@ -303,7 +303,6 @@ def dataSendLoop(addData_callbackFunc):
             pos, vel = bs.get_pos_vel(pos)
             print("D")
             filtered = Kalman.Kalman(pos, vel)
-
             #pos, vel = filtered[0][0], filtered[1][0]
             vel = - vel
 

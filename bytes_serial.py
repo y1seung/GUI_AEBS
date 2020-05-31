@@ -51,8 +51,21 @@ def get_pos_vel(prev_dis):
     return dis_mean, vel
 
 def get_movemean(prev_dis):
-    dis_list.append(bytes_serial())
+    global dis_list
+    dis_sum = 0
+    dt_sum = 0
 
+    while (len(dis_list) < 5 ):
+        dis_list.append(bytes_serial())
+
+    for dis, dt in dis_list:
+        dis_sum += dis
+        dt_sum += dt
+
+    dis_mean = dis_sum /5
+    vel = (dis_sum - prev_dis) / dt_sum
+    dis_list.remove(dis_list[0])
+    return dis_mean, vel
 
 
 if __name__ == "__main__":
