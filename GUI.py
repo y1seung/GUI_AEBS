@@ -319,7 +319,7 @@ def dataSendLoop(addData_callbackFunc):
             else:
                 TTC = pos / vel
         Algorithm.algo(TTC, myGUI.myFig.Criteria_TTC)
-        mySrc.data_signal.emit(TTC)  # <- Here you emit a signal!
+        mySrc.data_signal.emit(pos)  # <- Here you emit a signal!
 
 
 

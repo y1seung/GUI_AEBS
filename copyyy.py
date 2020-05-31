@@ -161,7 +161,7 @@ class ShowVideo(QtCore.QObject):
 class CustomFigCanvas(FigureCanvas, TimedAnimation):
     def __init__(self):
         self.addedData = []
-        self.Criteria_TTC = 2.6
+        self.Criteria_TTC = 0.26
         print('Matplotlib Version:', matplotlib.__version__)
 
         # The data

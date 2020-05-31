@@ -5,7 +5,7 @@ ser = serial.Serial('COM21', 115200)
 #ard = serial.Serial('COM19', 9600)
 TF_buff = [b'0' for i in range(9)]
 b = b'0xff'
-
+dis_list = []
 
 def bytes_serial():
     checksum = 0
@@ -49,6 +49,10 @@ def get_pos_vel(prev_dis):
     vel = (dis_mean-prev_dis) / (dt_sum)     #m/s단위
     vel = round(vel, 2)
     return dis_mean, vel
+
+def get_movemean(prev_dis):
+    dis_list.append(bytes_serial())
+
 
 
 if __name__ == "__main__":
