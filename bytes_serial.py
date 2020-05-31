@@ -1,7 +1,7 @@
 import time
 import serial
 
-ser = serial.Serial('COM21', 115200)
+ser = serial.Serial('COM13', 115200)
 #ard = serial.Serial('COM19', 9600)
 TF_buff = [b'0' for i in range(9)]
 b = b'0xff'
@@ -57,9 +57,10 @@ def get_movemean(prev_dis):
 
     while (len(dis_list) < 5 ):
         dis_list.append(bytes_serial())
+        
     for dis, dt in dis_list:
         dis_sum += dis
-        dt_sum += dt
+        dt_sum += 0.01
 
     dis_mean = dis_sum /5000
     dis_mean = round(dis_mean,3)

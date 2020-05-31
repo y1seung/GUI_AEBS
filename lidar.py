@@ -2,7 +2,7 @@
 from rplidar import RPLidar
 import numpy as np
 
-LIDAR_PORT_NAME = 'COM11'
+LIDAR_PORT_NAME = 'COM14'
 lidar = RPLidar(LIDAR_PORT_NAME)
 iterator = lidar.iter_scans(max_buf_meas=2000, min_len=0)
 
