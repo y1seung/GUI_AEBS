@@ -8,7 +8,6 @@ import LineDetection as ld
 import bytes_serial as bs
 import Kalman
 import matplotlib.pyplot as plt
-import lidar
 import Algorithm
 from PyQt5 import QtCore, QtGui, QtWidgets
 from matplotlib.figure import Figure
@@ -18,6 +17,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 matplotlib.use("QT5Agg")
 
+criteria_TTC = 1.6
 
 def setCustomSize(x, width, height):
     sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
@@ -69,8 +69,8 @@ class CustomMainWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.cTTC_spinbox.move(800, 200)
         self.cTTC_spinbox.setMinimum(0.0)
         self.cTTC_spinbox.setMaximum(9.9)
-        self.cTTC_spinbox.setSingleStep(0.1)
-        self.cTTC_spinbox.setValue(2.6)
+        self.cTTC_spinbox.setSingleStep(0.01)
+        self.cTTC_spinbox.setValue(self.myFig.Criteria_TTC)
         self.cTTC_spinbox.valueChanged.connect(self.change_criteria_TTC)
 
         vid.VideoSignal1.connect(self.ImageViewer.setImage)
@@ -88,9 +88,6 @@ class CustomMainWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         # print("Add data: " + str(value))
         self.myFig.addData(value)
 
-    def lidar_callbakcFunc(self, value):
-        # print(value)
-        self.lidar_graph.getData_lidar(value)
 
     def exit_event(self):
         sys.exit(app.exec_())
@@ -161,7 +158,7 @@ class ShowVideo(QtCore.QObject):
 class CustomFigCanvas(FigureCanvas, TimedAnimation):
     def __init__(self):
         self.addedData = []
-        self.Criteria_TTC = 0.26
+        self.Criteria_TTC = criteria_TTC
         print('Matplotlib Version:', matplotlib.__version__)
 
         # The data
@@ -312,6 +309,8 @@ def dataSendLoop(addData_callbackFunc):
                 pass
             else:
                 TTC = pos / vel
+        if TTC > 14:
+            TTC = 14
         Algorithm.algo(TTC, myGUI.myFig.Criteria_TTC)
         print(TTC)
         mySrc.data_signal.emit(TTC)  # <- Here you emit a signal!
