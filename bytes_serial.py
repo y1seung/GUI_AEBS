@@ -45,26 +45,28 @@ def get_pos_vel(prev_dis):
         dist, dt = bytes_serial()
         dist_sum += dist
         dt_sum += dt
+
     dis_mean = dist_sum / 15000      #m 단위
     vel = (dis_mean-prev_dis) / (dt_sum)     #m/s단위
     vel = round(vel, 2)
     return dis_mean, vel
 
 def get_movemean(prev_dis):
-    global dis_list
     dis_sum = 0
     dt_sum = 0
 
     while (len(dis_list) < 5 ):
         dis_list.append(bytes_serial())
-
     for dis, dt in dis_list:
         dis_sum += dis
         dt_sum += dt
 
-    dis_mean = dis_sum /5
-    vel = (dis_sum - prev_dis) / dt_sum
+    dis_mean = dis_sum /5000
+    dis_mean = round(dis_mean,3)
+    vel = (dis_mean - prev_dis) / dt_sum
+    vel = round(vel,2)
     dis_list.remove(dis_list[0])
+
     return dis_mean, vel
 
 
@@ -74,7 +76,7 @@ if __name__ == "__main__":
     TTC = 10
     while(True):
         start = time.time()
-        dis, vel = get_pos_vel(dis)
+        dis, vel = get_movemean(dis)
         print(dis)
         print(vel)
         vel = -vel

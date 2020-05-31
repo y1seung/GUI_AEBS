@@ -125,7 +125,7 @@ class ImageViewer(QtWidgets.QWidget):
 
 # Capture video from camera
 class ShowVideo(QtCore.QObject):
-    camera = cv2.VideoCapture(2)
+    camera = cv2.VideoCapture(1)
 
     ret, image = camera.read()
     print(ret)
@@ -296,7 +296,7 @@ def dataSendLoop(addData_callbackFunc):
     TTC = 10
     while (True):
         try:
-            pos, vel = bs.get_pos_vel(pos)
+            pos, vel = bs.get_movemean(pos)
             filtered = Kalman.Kalman(pos, vel)
 
             # pos, vel = filtered[0][0], filtered[1][0]
