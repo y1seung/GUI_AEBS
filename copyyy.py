@@ -4,7 +4,7 @@ import threading
 import matplotlib
 import cv2
 import numpy as np
-import LineDetection as ld
+import lanedetection as ld
 import bytes_serial as bs
 import Kalman
 import matplotlib.pyplot as plt
@@ -122,10 +122,9 @@ class ImageViewer(QtWidgets.QWidget):
 
 # Capture video from camera
 class ShowVideo(QtCore.QObject):
-    camera = cv2.VideoCapture(1)
+    camera = cv2.VideoCapture(2)
 
     ret, image = camera.read()
-    print(ret)
     height, width = image.shape[:2]
 
     VideoSignal1 = QtCore.pyqtSignal(QtGui.QImage)
@@ -136,22 +135,25 @@ class ShowVideo(QtCore.QObject):
     @QtCore.pyqtSlot()
     def startVideo(self):
         global image
-
+        video = ld.LaneDetection()
         run_video = True
         while run_video:
+            starttime = time.time()
             ret, image = self.camera.read()
-            image = ld.linedetection(image)
+            image, curve = video.laneDetect(image)
             color_swapped_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
+            Algorithm.curve_algo(curve)
             qt_image1 = QtGui.QImage(color_swapped_image.data,
                                      self.width,
                                      self.height,
                                      color_swapped_image.strides[0],
                                      QtGui.QImage.Format_RGB888)
             self.VideoSignal1.emit(qt_image1)
-
+            endtime = time.time()
+            dt = endtime - starttime
+            print(1/dt)
             loop = QtCore.QEventLoop()
-            QtCore.QTimer.singleShot(50, loop.quit)  # The number depends on the video
+            QtCore.QTimer.singleShot(10, loop.quit)  # The number depends on the video
             loop.exec_()
 
 
@@ -312,7 +314,7 @@ def dataSendLoop(addData_callbackFunc):
         if TTC > 14:
             TTC = 14
         Algorithm.algo(TTC, myGUI.myFig.Criteria_TTC)
-        print(TTC)
+        #print(TTC)
         mySrc.data_signal.emit(TTC)  # <- Here you emit a signal!
 
 

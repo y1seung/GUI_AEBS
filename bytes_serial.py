@@ -1,7 +1,7 @@
 import time
 import serial
 
-ser = serial.Serial('COM13', 115200)
+ser = serial.Serial('COM25', 115200)
 #ard = serial.Serial('COM19', 9600)
 TF_buff = [b'0' for i in range(9)]
 b = b'0xff'
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         start = time.time()
         dis, vel = get_movemean(dis)
         print(dis)
-        print(vel)
+        #print(vel)
         vel = -vel
         if (vel == 0):
             pass

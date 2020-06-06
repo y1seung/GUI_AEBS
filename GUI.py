@@ -5,7 +5,7 @@ import threading
 import matplotlib
 import cv2
 import numpy as np
-import LineDetection as ld
+import lanedetection as ld
 import bytes_serial as bs
 import Kalman
 import matplotlib.pyplot as plt
@@ -137,7 +137,6 @@ class ShowVideo(QtCore.QObject):
     camera = cv2.VideoCapture(2)
 
     ret, image = camera.read()
-    print(ret)
     height, width = image.shape[:2]
 
     VideoSignal1 = QtCore.pyqtSignal(QtGui.QImage)
@@ -150,9 +149,10 @@ class ShowVideo(QtCore.QObject):
         global image
 
         run_video = True
+        video = ld.LaneDetection()
         while run_video:
             ret, image = self.camera.read()
-            image = ld.linedetection(image)
+            image = video.laneDetect(image)
             color_swapped_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             qt_image1 = QtGui.QImage(color_swapped_image.data,
@@ -326,5 +326,4 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create('Plastique'))
     myGUI = CustomMainWindow()
-
     sys.exit(app.exec_())

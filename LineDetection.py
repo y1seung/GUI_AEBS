@@ -85,11 +85,10 @@ def linedetection(img):
     
 
 def run():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture('line.mp4')
     #out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (640, 480))
     while (True):
         ret, src1 = cap.read()
-        #out.write(src1)
         #src = cv2.resize(src1, (640, 640))
         src = ROI(src1)
         #src = bev(src)
@@ -99,7 +98,7 @@ def run():
 
         cdstP = np.copy(cdst)
     
-        lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
+        lines = cv2.HoughLines(dst, 1, np.pi / 180, 100, 100, 50, 20)
     
         if lines is not None:
             for i in range(0, len(lines)):
@@ -124,10 +123,10 @@ def run():
         #final = bev_inv(cdstP)
         #final = ROI2(cdstP)
         #final = hsv_filter(cdstP)
-        final = cv2.addWeighted(src1, 1, cdstP, 1, 0.0)
+        final = cv2.addWeighted(src1, 1, cdst, 1, 0.0)
 
         cv2.imshow("Source", src)
-        #cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
+        cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
         #cv2.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
         cv2.imshow("final", final)
         if cv2.waitKey(1) & 0xFF == ord('q'):
